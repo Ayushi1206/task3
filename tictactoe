@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Tic-Tac-Toe</h1>
+        <div id="board" class="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        <button id="resetBtn">Restart Game</button>
+        <p id="status"></p>
+    </div>
+    <script src="scrip.js"></script>
+</body>
+</html>
+css part:-
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f7f7f7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 5px;
+    margin: 20px 0;
+}
+
+.cell {
+    width: 100px;
+    height: 100px;
+    background-color: #fff;
+    border: 2px solid #000;
+    font-size: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.cell.taken {
+    pointer-events: none;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#status {
+    font-size: 20px;
+    margin-top: 20px;
+}
+javascript part:-
+const board = document.getElementById('board');
+const cells = document.querySelectorAll('.cell');
+const resetBtn = document.getElementById('resetBtn');
+const statusText = document.getElementById('status');
+
+let gameBoard = ['', '', '', '', '', '', '', '', ''];
+let isGameOver = false;
+let currentPlayer = 'X'; // Player starts first
+
+// Handle user click on the board
+cells.forEach(cell => {
+    cell.addEventListener('click', () => {
+        if (isGameOver || cell.classList.contains('taken')) return;
+
+        const index = cell.getAttribute('data-index');
+        makeMove(index, currentPlayer);
+        if (checkWinner(currentPlayer)) {
+            statusText.textContent = `${currentPlayer} Wins!`;
+            isGameOver = true;
+            return;
+        }
+
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; // Switch turn
+        if (currentPlayer === 'O' && !isGameOver) {
+            setTimeout(computerMove, 500); // Make computer move after a delay
+        }
+    });
+});
+
+// Handle computer's move
+function computerMove() {
+    const emptyCells = gameBoard.map((cell, index) => cell === '' ? index : -1).filter(index => index !== -1);
+    const randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    makeMove(randomIndex, 'O');
+    if (checkWinner('O')) {
+        statusText.textContent = 'O Wins!';
+        isGameOver = true;
+    } else {
+        currentPlayer = 'X';
+    }
+}
+
+// Make a move on the board
+function makeMove(index, player) {
+    gameBoard[index] = player;
+    const cell = cells[index];
+    cell.textContent = player;
+    cell.classList.add('taken');
+}
+
+// Check for a winner
+function checkWinner(player) {
+    const winPatterns = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+    ];
+
+    return winPatterns.some(pattern => {
+        return pattern.every(index => gameBoard[index] === player);
+    });
+}
+
+// Reset the game
+resetBtn.addEventListener('click', () => {
+    gameBoard = ['', '', '', '', '', '', '', '', ''];
+    isGameOver = false;
+    currentPlayer = 'X';
+    cells.forEach(cell => {
+        cell.textContent = '';
+        cell.classList.remove('taken');
+    });
+    statusText.textContent = '';
+});
